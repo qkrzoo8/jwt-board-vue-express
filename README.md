@@ -188,7 +188,7 @@ npm run preview
 - [x] README의 서비스 소개, 기술 조합, 설치·실행 방법과 구현 내용을 작성했다.
 - [ ] 새 폴더에 clone하여 README만으로 설치·환경설정·빌드·로컬 실행했다.
 - [x] 4173번 빌드 화면에서 API 연결과 주요 필수 기능을 확인했다.
-- [ ] GitHub에서 보고서와 증거 링크가 열린다.
+- [x] GitHub에서 보고서와 증거 링크가 열린다.
 - [x] 교수자가 저장소를 열람·복제할 수 있도록 Public 저장소로 생성했다.
-- [ ] 비밀 키·실제 토큰·DB·node_modules·.venv·target이 커밋되지 않았는지 최종 확인했다.
+- [x] 비밀 키·실제 토큰·DB·node_modules·.venv·target이 커밋되지 않았는지 최종 확인했다.
 - [ ] 최종 push 후 저장소 URL과 제출 기준 커밋 SHA를 LMS에 제출했다.
