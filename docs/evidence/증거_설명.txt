@@ -1,0 +1,62 @@
+우리의 기록 JWT 게시판 테스트 증거 설명
+
+보고서의 E번호는 이 폴더의 이미지 파일과 대응합니다. 직접 수행한 검사 결과와 개별 캡처 범위는 구분하여 기록했습니다.
+
+E01 / T02·T05
+E01_로그인_JWT전송.png
+4173번 빌드 화면에서 Alice 로그인 상태와 GET /api/me의 200 OK를 확인했습니다. 이 사진에는 Authorization 헤더가 펼쳐져 있지 않으며, 헤더 확인은 E01b와 연결합니다.
+
+E01b / T05
+E01b_Bearer헤더_토큰가림.png
+5173번 개발 화면에서 Authorization: Bearer 헤더를 확인했으며 토큰 값은 가렸습니다. 304 Not Modified는 브라우저 캐시 응답이므로 200 확인 근거로 사용하지 않습니다.
+
+E02 / T07
+E02_작성자_수정거부.png
+Bob의 수정 시도에 대한 403 FORBIDDEN 응답과 GET /api/posts/2의 200 재조회로 원문 유지를 확인했습니다. 수정 요청 명령은 화면 밖에 있으며, Bob의 PUT 요청 검사는 E06과 함께 연결합니다.
+
+E03 / T08
+E03_작성자_삭제거부.png
+Bob의 DELETE /api/posts/2 요청이 403 FORBIDDEN으로 거부되고, 이후 200 재조회에서 게시글이 유지되는 것을 확인했습니다.
+
+E04 / T09
+E04_JWT변조.png
+JWT의 서명 부분을 변조한 뒤 GET /api/me 요청에서 401 INVALID_TOKEN을 확인했습니다. 변조 토큰으로 게시글 변경 요청을 거부하는 검사는 E06에 연결합니다.
+
+E05 / T10
+E05_JWT만료.png
+짧은 TTL로 발급한 JWT가 만료된 뒤 GET /api/me 요청에서 401 TOKEN_EXPIRED와 WWW-Authenticate: Bearer를 확인했습니다. 만료된 토큰의 게시글 변경 요청 거부는 E06에 연결합니다.
+
+E05b / T10
+E05b_만료후_자동로그아웃_UI.png
+5173번 개발 화면에서 토큰 만료 안내, /api/me의 401 응답 및 로그인 상태 해제를 확인했습니다. 개발 당시의 이전 안내 배너가 남은 보조 증거이며, 최종 빌드 화면은 E01·E08로 구분합니다.
+
+E06 / 자동 검사
+E06_자동검사_48PASS.png
+python3 tools/check_api.py --mode final의 40/40 PASS와 --mode final --expiry의 48/48 PASS를 확인했습니다. 작성자 권한, authorId·userId 추가 필드 거부, 공백·길이 초과 입력, 토큰 변조·만료 및 본인 CRUD 검사 결과를 포함합니다. UI와 서버 재시작 검사는 자동 검사에 포함되지 않습니다.
+
+E07 / 로컬 빌드
+E07_프로덕션빌드.png
+frontend-vue에서 npm run build로 Vite 프로덕션 빌드가 성공한 로그입니다. 빌드 결과의 4173번 API 연결 확인은 E01·E08과 연결합니다.
+
+E08 / T01·T15·T16 참고
+E08_데이터유지.png
+서버 재시작 후 기존 게시글 데이터 유지와 4173번 화면의 목록·상세 API 200 응답을 확인했습니다. 새로고침 후 로그인 해제·게시글 유지는 직접 확인했으며, 이 사진은 해당 결과의 참고 자료입니다. 사진 한 장으로 새로고침 전후 비교 전체를 제시하는 것은 아닙니다.
+
+E09 / T06
+E09_본인글_수정200_삭제204.png
+Alice의 PUT /api/posts/2가 200 OK와 수정된 게시글 JSON을 반환하고, DELETE /api/posts/2가 204 No Content와 빈 본문을 반환한 결과입니다. 삭제 후 재조회 404는 E11과 연결합니다.
+
+E09b / T05
+E09b_게시글작성201_Location.png
+Alice의 POST /api/posts가 201 Created와 Location: /api/posts/8을 반환했습니다. 응답 JSON의 id는 8, authorId는 1, authorName은 Alice입니다. /api/me 200은 E01과 연결합니다.
+
+E10 / T12
+E10_작성자위조_400_BAD_INPUT.png
+Alice 토큰으로 authorId:2를 추가한 POST /api/posts 요청이 400 BAD_INPUT과 “허용된 JSON 필드만 보내세요.”로 거부되었습니다. Bob이 authorId:1 또는 userId:1을 추가한 조건은 E06의 자동 검사와 구분합니다.
+
+E11 / T06·T13·T14
+E11_입력검사_400_BAD_INPUT.png
+삭제 후 GET /api/posts/2가 404 NOT_FOUND를 반환했습니다. 공백 title·content를 함께 보낸 작성 요청은 400 BAD_INPUT과 “title 입력을 확인하세요.”를 반환했습니다. 공백 본문·길이 초과를 각각 거부한 결과는 이 사진만으로 판단하지 않고 E06의 자동 검사 및 직접 확인 기록에 연결합니다.
+
+캡처가 별도로 없는 직접 확인 항목
+로그아웃 후 /api/me의 401 TOKEN_REQUIRED(T11), 새로고침 후 로그인 해제·게시글 유지(T16), 무토큰으로 없는 글 수정 시 401 TOKEN_REQUIRED는 보고서의 직접 확인 기록에 정리했습니다. 별도 증거 이미지는 추가하지 않았습니다.
